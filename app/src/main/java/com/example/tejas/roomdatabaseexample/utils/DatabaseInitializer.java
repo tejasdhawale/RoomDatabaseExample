@@ -5,12 +5,13 @@ import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
-import com.example.tejas.roomdatabaseexample.database.AppDatabase;
-import com.example.tejas.roomdatabaseexample.entity.ImagePathEntity;
+import com.example.tejas.roomdatabaseexample.DataBase.AppDatabase;
+import com.example.tejas.roomdatabaseexample.DataBase.ImagePathEntity;
 
 import java.util.List;
 
 public class DatabaseInitializer {
+
 
     private static final String TAG = DatabaseInitializer.class.getName();
 
@@ -28,16 +29,6 @@ public class DatabaseInitializer {
         return imagePathEntity;
     }
 
-    private static void populateWithTestData(AppDatabase db,String imageUrl,String localPath,String assestId) {
-        ImagePathEntity imagePathEntity = new ImagePathEntity();
-        imagePathEntity.setImageUrl(imageUrl);
-        imagePathEntity.setLocalPath(localPath);
-        imagePathEntity.setAssetId(assestId);
-        addUser(db, imagePathEntity);
-
-        List<ImagePathEntity> imagePathEntityList = db.userDao().getAll();
-        Log.d(DatabaseInitializer.TAG, "Rows Count: " + imagePathEntityList.size());
-    }
 
     private static class PopulateDbAsync extends AsyncTask<Void, Void, Void> {
 
@@ -57,4 +48,17 @@ public class DatabaseInitializer {
         }
 
     }
+
+
+    private static void populateWithTestData(AppDatabase db,String imageUrl,String localPath,String assestId) {
+        ImagePathEntity imagePathEntity = new ImagePathEntity();
+        imagePathEntity.setImageUrl(imageUrl);
+        imagePathEntity.setLocalPath(localPath);
+        imagePathEntity.setAssetId(assestId);
+        addUser(db, imagePathEntity);
+
+        List<ImagePathEntity> imagePathEntityList = db.userDao().getAll();
+        Log.d(DatabaseInitializer.TAG, "Rows Count: " + imagePathEntityList.size());
+    }
+
 }

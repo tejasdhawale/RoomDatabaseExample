@@ -1,4 +1,4 @@
-package com.example.tejas.roomdatabaseexample.entity;
+package com.example.tejas.roomdatabaseexample.DataBase;
 
 import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;

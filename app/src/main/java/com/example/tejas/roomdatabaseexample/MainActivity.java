@@ -17,8 +17,11 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.tejas.roomdatabaseexample.database.AppDatabase;
-import com.example.tejas.roomdatabaseexample.utils.DatabaseInitializer;
+import com.example.tejas.roomdatabaseexample.DaggerData.DaggerAppComponent;
+import com.example.tejas.roomdatabaseexample.DaggerData.StorageModule;
+import com.example.tejas.roomdatabaseexample.DataBase.AppDatabase;
+import com.example.tejas.roomdatabaseexample.DataBase.ImagePathEntity;
+import com.example.tejas.roomdatabaseexample.DataBase.UserDao;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -31,15 +34,21 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import javax.inject.Inject;
+
 public class MainActivity extends AppCompatActivity {
 
+    @Inject
+    UserDao userDao;
+    @Inject
+    AppDatabase appDatabase;
     ContentLoadingProgressBar pb;
     Dialog dialog;
     int downloadedSize = 0;
     int totalSize = 0;
     TextView cur_val;
-    String imageUrl ="https://img-lumas-avensogmbh1.netdna-ssl.com/showimg_dpi01_full.jpg";
-    String imageAssetId="cam_1";
+    String imageUrl = "https://img-lumas-avensogmbh1.netdna-ssl.com/showimg_dpi01_full.jpg";
+    String imageAssetId = "cam_1";
     private Context mContext;
     private static final int MY_PERMISSIONS_REQUEST_CODE = 0;
 
@@ -50,6 +59,8 @@ public class MainActivity extends AppCompatActivity {
 
         mContext = this;
 
+        DaggerAppComponent.builder().storageModule(new StorageModule(this)).build().inject(this);
+
         Button b = (Button) findViewById(R.id.b1);
 
         b.setOnClickListener(new View.OnClickListener() {
@@ -59,7 +70,7 @@ public class MainActivity extends AppCompatActivity {
 
                 new Thread(new Runnable() {
                     public void run() {
-                        downloadFile(imageUrl,imageAssetId);
+                        downloadFile(imageUrl, imageAssetId);
                     }
                 }).start();
             }
@@ -67,10 +78,8 @@ public class MainActivity extends AppCompatActivity {
 
 
         int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-//		Log.d(LOG_TAG, "Permission check: " + permissionCheck);
         if (permissionCheck == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             Log.d("Voice Recorder", "PERMISSION_GRANTED");
-//			Log.d(LOG_TAG, "recorder state: " + mRecorder.getState().name() + ", recorder Amplitude: " + mRecorder.getMaxAmplitude());
         } else {
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE},
@@ -83,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
 
         try {
             URL url = new URL(imageUrl);
-            HttpURLConnection urlConnection = (HttpURLConnection)url.openConnection();
+            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setRequestMethod("GET");
             urlConnection.setDoOutput(true);
 
@@ -121,11 +130,10 @@ public class MainActivity extends AppCompatActivity {
                     public void run() {
                         pb.setProgress(downloadedSize);
                         float per = ((float) downloadedSize / totalSize) * 100;
-                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                             pb.setProgress((int) per,true);
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                            pb.setProgress((int) per, true);
 
-                        }
-                        else{
+                        } else {
                             pb.setProgress((int) per);
                         }
                         cur_val.setText((int) per + "%");
@@ -136,9 +144,17 @@ public class MainActivity extends AppCompatActivity {
             fileOutput.close();
             runOnUiThread(new Runnable() {
                 public void run() {
-//                     pb.dismiss(); // if you want close it..
+//                  pb.dismiss(); // if you want close it..
                     dialog.dismiss();
-                    DatabaseInitializer.populateSync(AppDatabase.getAppDatabase(mContext),imageUrl,file.getAbsolutePath(),imageAssetId);
+
+
+                    ImagePathEntity imagePathEntity=new ImagePathEntity();
+                    imagePathEntity.setImageUrl(imageUrl);
+                    imagePathEntity.setLocalPath(file.getAbsolutePath());
+                    imagePathEntity.setAssetId(imageAssetId);
+                    appDatabase.userDao().insertAll(imagePathEntity);
+
+//                  DatabaseInitializer.populateSync(AppDatabase.getAppDatabase(mContext), imageUrl, file.getAbsolutePath(), imageAssetId);
                 }
             });
 
@@ -156,7 +172,7 @@ public class MainActivity extends AppCompatActivity {
     void showError(final String err) {
         runOnUiThread(new Runnable() {
             public void run() {
-                Toast.makeText(mContext, err,Toast.LENGTH_LONG).show();
+                Toast.makeText(mContext, err, Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -177,9 +193,8 @@ public class MainActivity extends AppCompatActivity {
 
         pb = (ContentLoadingProgressBar) dialog.findViewById(R.id.progress_bar);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            pb.setProgress(0,true);
-        }
-        else{
+            pb.setProgress(0, true);
+        } else {
             pb.setProgress(0);
         }
 //      pb.setProgressDrawable(getResources().getDrawable(R.drawable.green_progress));
@@ -192,4 +207,8 @@ public class MainActivity extends AppCompatActivity {
                 + dateFormat.format(new Date())
                 + ".png");
     }
+
+
+
+
 }
