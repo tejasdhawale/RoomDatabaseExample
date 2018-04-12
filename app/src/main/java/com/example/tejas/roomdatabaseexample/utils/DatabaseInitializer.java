@@ -10,6 +10,10 @@ import com.example.tejas.roomdatabaseexample.DataBase.ImagePathEntity;
 
 import java.util.List;
 
+/**
+* Unused Class
+* */
+
 public class DatabaseInitializer {
 
 

@@ -148,7 +148,7 @@ public class MainActivity extends AppCompatActivity {
                     dialog.dismiss();
 
 
-                    ImagePathEntity imagePathEntity=new ImagePathEntity();
+                    ImagePathEntity imagePathEntity = new ImagePathEntity();
                     imagePathEntity.setImageUrl(imageUrl);
                     imagePathEntity.setLocalPath(file.getAbsolutePath());
                     imagePathEntity.setAssetId(imageAssetId);
@@ -207,8 +207,6 @@ public class MainActivity extends AppCompatActivity {
                 + dateFormat.format(new Date())
                 + ".png");
     }
-
-
 
 
 }
